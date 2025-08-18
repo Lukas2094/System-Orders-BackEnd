@@ -1,10 +1,14 @@
-// dto/login.dto.ts
+// dto/register.dto.ts
 import { IsEmail, IsString, MinLength } from 'class-validator';
 
-export class LoginDto {
+export class RegisterDto {
     @IsEmail()
     email: string;
 
     @IsString()
+    @MinLength(6)
     password: string;
+
+    @IsString()
+    role: string; // ex: "user", "admin"
 }

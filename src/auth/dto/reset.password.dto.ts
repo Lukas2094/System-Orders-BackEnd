@@ -1,10 +1,11 @@
-// dto/login.dto.ts
+// dto/reset-password.dto.ts
 import { IsEmail, IsString, MinLength } from 'class-validator';
 
-export class LoginDto {
+export class ResetPasswordDto {
     @IsEmail()
     email: string;
 
     @IsString()
-    password: string;
+    @MinLength(6)
+    newPassword: string;
 }

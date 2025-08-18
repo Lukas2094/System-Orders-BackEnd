@@ -19,8 +19,8 @@ import { Order } from './orders/orders.entity';
       username: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || '',
       database: process.env.DB_NAME || 'system_orders',
-      entities: [User, Product, Order],
-      synchronize: true, // para dev; não usar em produção
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      synchronize: true,
     }),
     UsersModule,
     AuthModule,
