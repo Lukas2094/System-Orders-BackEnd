@@ -6,12 +6,14 @@ import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 import { WebsocketModule } from './websocket/websocket.module';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
-import { User } from './users/users.entity';
-import { Product } from './products/products.entity';
-import { Order } from './orders/orders.entity';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, 
+    }),
+
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST || 'localhost',
