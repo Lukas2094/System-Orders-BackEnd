@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Query, Put } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
@@ -8,7 +8,13 @@ export class ProductsController {
     constructor(private productsService: ProductsService) { }
 
     @Get()
-    findAll() {
+    findAll(@Query('category') categoryId?: number, @Query('subcategory') subcategoryId?: number) {
+        if (categoryId) {
+            return this.productsService.findByCategory(+categoryId);
+        }
+        if (subcategoryId) {
+            return this.productsService.findBySubcategory(+subcategoryId);
+        }
         return this.productsService.findAll();
     }
 
@@ -27,7 +33,7 @@ export class ProductsController {
         return this.productsService.updateStock(+id, updateStockDto);
     }
 
-    @Patch(':id')
+    @Put(':id')
     update(@Param('id') id: number, @Body() updateData: Partial<CreateProductDto>) {
         return this.productsService.update(+id, updateData);
     }
@@ -35,5 +41,16 @@ export class ProductsController {
     @Delete(':id')
     remove(@Param('id') id: number) {
         return this.productsService.remove(+id);
+    }
+
+    // Novas rotas para filtros específicos
+    @Get('category/:categoryId')
+    findByCategory(@Param('categoryId') categoryId: number) {
+        return this.productsService.findByCategory(+categoryId);
+    }
+
+    @Get('subcategory/:subcategoryId')
+    findBySubcategory(@Param('subcategoryId') subcategoryId: number) {
+        return this.productsService.findBySubcategory(+subcategoryId);
     }
 }
