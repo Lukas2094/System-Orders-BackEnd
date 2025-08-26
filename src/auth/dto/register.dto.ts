@@ -1,7 +1,11 @@
 // dto/register.dto.ts
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsString, MinLength , IsNumber } from 'class-validator';
 
 export class RegisterDto {
+
+    @IsString()
+    name: string;
+
     @IsEmail()
     email: string;
 
@@ -9,6 +13,6 @@ export class RegisterDto {
     @MinLength(6)
     password: string;
 
-    @IsString()
-    role: string; // ex: "user", "admin"
+    @IsNumber()
+    roleId?: number;
 }

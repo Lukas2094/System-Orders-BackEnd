@@ -11,7 +11,7 @@ import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
     cors: {
-        origin: '*', // Permitir conexões do frontend
+        origin: '*', // permitir conexões do frontend
     },
 })
 export class WebsocketGateway
@@ -20,28 +20,39 @@ export class WebsocketGateway
     server: Server;
 
     afterInit(server: Server) {
-        console.log('WebSocket iniciado');
+        console.log('✅ WebSocket iniciado');
     }
 
-    handleConnection(client: Socket, ...args: any[]) {
-        console.log(`Cliente conectado: ${client.id}`);
+    handleConnection(client: Socket) {
+        console.log(`🔌 Cliente conectado: ${client.id}`);
     }
 
     handleDisconnect(client: Socket) {
-        console.log(`Cliente desconectado: ${client.id}`);
+        console.log(`❌ Cliente desconectado: ${client.id}`);
     }
 
-    // Exemplo de evento: atualizar pedidos
+    // ---- Eventos de pedidos ----
     @SubscribeMessage('updateOrders')
     handleUpdateOrders(@MessageBody() data: any) {
-        console.log('Update Orders:', data);
-        this.server.emit('ordersUpdated', data); // envia para todos os clientes conectados
+        console.log('📦 Update Orders:', data);
+        this.server.emit('ordersUpdated', data);
     }
 
-    // Exemplo de evento: atualizar estoque
+    // ---- Eventos de estoque ----
     @SubscribeMessage('updateStock')
     handleUpdateStock(@MessageBody() data: any) {
-        console.log('Update Stock:', data);
+        console.log('📦 Update Stock:', data);
         this.server.emit('stockUpdated', data);
+    }
+
+    // ---- Eventos de usuários ----
+    emitUserUpdated(user: any) {
+        console.log('👤 User updated:', user);
+        this.server.emit('userUpdated', user);
+    }
+
+    emitUserDeleted(userId: number) {
+        console.log('🗑️ User deleted:', userId);
+        this.server.emit('userDeleted', userId);
     }
 }

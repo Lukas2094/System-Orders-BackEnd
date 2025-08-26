@@ -9,6 +9,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
 import { ConfigModule } from '@nestjs/config';
 import { CategoriesModule } from './categories/categories.module';
 import { SubcategoriesModule } from './subcategories/subcategories.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -33,7 +34,8 @@ import { SubcategoriesModule } from './subcategories/subcategories.module';
     WebsocketModule,
     WhatsappModule,
     CategoriesModule,
-    SubcategoriesModule
+    SubcategoriesModule,
+    RolesModule
   ],
 })
 export class AppModule { }

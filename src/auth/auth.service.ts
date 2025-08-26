@@ -31,7 +31,6 @@ export class AuthService {
         }
         return null;
     }
-
     async register(registerDto: RegisterDto) {
         const existing = await this.userRepository.findOne({ where: { email: registerDto.email } });
         if (existing) throw new ConflictException('Email já cadastrado');
@@ -41,7 +40,7 @@ export class AuthService {
         const newUser = this.userRepository.create({
             email: registerDto.email,
             password: hashedPassword,
-            role: registerDto.role || 'user',
+            roleId: registerDto.roleId || 1,
         });
 
         await this.userRepository.save(newUser);
