@@ -29,14 +29,14 @@ export class Product {
   categoryId: number;
 
   @ManyToOne(() => Subcategory, (subcategory) => subcategory.products, { 
-    nullable: true, // ← Permite null
+    nullable: true, 
     onDelete: 'SET NULL'
   })
   @JoinColumn({ name: 'subcategory_id' })
-  subcategory: Subcategory | null; // ← Tipo atualizado para permitir null
+  subcategory: Subcategory | null;
 
   @Column({ name: 'subcategory_id', nullable: true })
-  subcategoryId: number | null; // ← Tipo atualizado para permitir null
+  subcategoryId: number | null;
 
   @Column('decimal', { 
     precision: 10, 
