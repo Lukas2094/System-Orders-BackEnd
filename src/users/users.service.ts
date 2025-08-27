@@ -42,17 +42,18 @@ export class UsersService {
     async create(createUserDto: CreateUserDto & { roleId?: number }): Promise<User> {
         const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
-        const role = createUserDto.roleId
-            ? await this.roleRepository.findOne({ where: { id: createUserDto.roleId } })
-            : undefined; 
+      const role = createUserDto.roleId
+        ? await this.roleRepository.findOne({ where: { id: createUserDto.roleId } })
+        : await this.roleRepository.findOne({ where: { id: 1 } });
 
-        if (createUserDto.roleId && !role) throw new NotFoundException('Role não encontrada');
+        if (!role) throw new NotFoundException('Role não encontrada');
 
         const user = this.usersRepository.create({
             name: createUserDto.name,
             email: createUserDto.email,
             password: hashedPassword,
-            roleId: createUserDto.roleId ?? 1,
+            phone: createUserDto.phone,
+            roleId: role.id,
         });
 
         const savedUser = await this.usersRepository.save(user);
@@ -71,6 +72,7 @@ export class UsersService {
         const user = await this.findById(id);
 
         if (updateUserDto.name) user.name = updateUserDto.name;
+        if (updateUserDto.phone) user.phone = updateUserDto.phone;
         if (updateUserDto.email) user.email = updateUserDto.email;
         if (updateUserDto.password) {
             user.password = await bcrypt.hash(updateUserDto.password, 10);

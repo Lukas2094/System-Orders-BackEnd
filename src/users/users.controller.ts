@@ -19,7 +19,7 @@ export class UsersController {
 
     @Post()
     async create(@Body() createUserDto: CreateUserDto) {
-        return this.usersService.create(createUserDto);
+    return this.usersService.create(createUserDto);
     }
 
     @Put(':id')
