@@ -47,8 +47,13 @@ export class WebsocketGateway
 
     // ---- Eventos de usuários ----
     emitUserUpdated(user: any) {
-        // console.log('👤 User updated:', user);
-        this.server.emit('userUpdated', user);
+        this.server.emit('userUpdated', {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            role: user.role, // objeto { id, name }
+        });
     }
 
     emitUserDeleted(userId: number) {
