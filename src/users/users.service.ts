@@ -35,6 +35,7 @@ export class UsersService {
         return this.usersRepository
             .createQueryBuilder('user')
             .addSelect('user.password')
+            .leftJoinAndSelect('user.role', 'role')
             .where('user.email = :email', { email })
             .getOne();
     }
@@ -53,7 +54,7 @@ export class UsersService {
             email: createUserDto.email,
             password: hashedPassword,
             phone: createUserDto.phone,
-            roleId: role.id,
+            roleId: role.id || 1,
         });
 
         const savedUser = await this.usersRepository.save(user);
