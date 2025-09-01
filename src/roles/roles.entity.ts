@@ -1,7 +1,8 @@
 
 // roles.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToMany } from 'typeorm';
 import { User } from '../users/users.entity';
+import { Menu } from 'src/menu/menu.entity';
 
 @Entity('roles')
 export class Role {
@@ -19,4 +20,7 @@ export class Role {
 
     @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
+
+    @ManyToMany(() => Menu, menu => menu.roles)
+    menus: Menu[];
 }

@@ -60,4 +60,20 @@ export class WebsocketGateway
         console.log('🗑️ User deleted:', userId);
         this.server.emit('userDeleted', userId);
     }
+
+    // ---- Eventos de menus ----
+    emitMenuCreated(menu: any) {
+        console.log('🆕 Menu criado:', menu);
+        this.server.emit('menuCreated', menu);
+    }
+
+    emitMenuUpdated(menu: any) {
+        console.log('✏️ Menu atualizado:', menu);
+        this.server.emit('menuUpdated', menu);
+    }
+
+    emitMenuDeleted(menuId: number) {
+        console.log('🗑️ Menu deletado:', menuId);
+        this.server.emit('menuDeleted', menuId);
+    }
 }

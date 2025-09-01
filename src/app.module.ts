@@ -10,6 +10,7 @@ import { ConfigModule } from '@nestjs/config';
 import { CategoriesModule } from './categories/categories.module';
 import { SubcategoriesModule } from './subcategories/subcategories.module';
 import { RolesModule } from './roles/roles.module';
+import { MenuModule } from './menu/menu.module';
 
 @Module({
   imports: [
@@ -35,7 +36,8 @@ import { RolesModule } from './roles/roles.module';
     WhatsappModule,
     CategoriesModule,
     SubcategoriesModule,
-    RolesModule
+    RolesModule,
+    MenuModule
   ],
 })
 export class AppModule { }
