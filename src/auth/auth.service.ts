@@ -20,12 +20,11 @@ export class AuthService {
         const userWithRole = await this.usersService.findById(user.id);
 
         const payload = {
-            name: userWithRole.name, 
-            email: userWithRole.email,
-            sub: userWithRole.id,
-            role: userWithRole.role
-                ? { id: userWithRole.role.id, name: userWithRole.role.name }
-                : null
+            sub: userWithRole.id,    
+            name: userWithRole.name,     
+            email: userWithRole.email,   
+            role: userWithRole.role ? userWithRole.role.name : null,
+            roleId: userWithRole.role ? userWithRole.role.id : null, 
         };
 
         return {

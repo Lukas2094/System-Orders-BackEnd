@@ -7,6 +7,7 @@ import { Role } from 'src/roles/roles.entity';
 import { WebsocketGateway } from 'src/websocket/websocket.gateway';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +17,7 @@ export class UsersService {
         @InjectRepository(Role)
         private roleRepository: Repository<Role>,
         private websocketGateway: WebsocketGateway,
+        private jwtService: JwtService,
     ) {}
 
     async findAll(): Promise<User[]> {
@@ -26,6 +28,7 @@ export class UsersService {
         const user = await this.usersRepository.findOne({
             where: { id },
             relations: ['role'],
+            
         });
         if (!user) throw new NotFoundException('Usuário não encontrado');
         return user;
@@ -69,7 +72,7 @@ export class UsersService {
         return userWithRole;
     }
 
-    async update(id: number, updateUserDto: UpdateUserDto & { roleId?: number }): Promise<User> {
+    async update(id: number, updateUserDto: UpdateUserDto & { roleId?: number }): Promise<{ user: User, token: string }> {
         const user = await this.findById(id);
 
         if (updateUserDto.name) user.name = updateUserDto.name;
@@ -93,12 +96,20 @@ export class UsersService {
             relations: ['role'],
         });
 
-        // console.log('👤 User updated:', userWithRole);
-        this.websocketGateway.emitUserUpdated(userWithRole);
         if (!userWithRole) throw new NotFoundException('Usuário não encontrado');
-        return userWithRole;
-    }
 
+        this.websocketGateway.emitUserUpdated(userWithRole);
+
+        const payload = {
+            sub: userWithRole.id,
+            name: userWithRole.name,
+            role: userWithRole.role?.name,
+            roleId: userWithRole.role?.id,
+        };
+        const token = this.jwtService.sign(payload);
+
+        return { user: userWithRole, token };
+    }
     async remove(id: number): Promise<void> {
         const user = await this.findById(id);
         await this.usersRepository.remove(user);
