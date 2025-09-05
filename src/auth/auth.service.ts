@@ -16,15 +16,20 @@ export class AuthService {
         private usersService: UsersService,
     ) { }
 
-    async login(user: any) {
+    async login(email: string, password: string) {
+        const user = await this.validateUser(email, password);
+        if (!user) {
+            throw new UnauthorizedException('Email ou senha inválidos');
+        }
+
         const userWithRole = await this.usersService.findById(user.id);
 
         const payload = {
-            sub: userWithRole.id,    
-            name: userWithRole.name,     
-            email: userWithRole.email,   
+            sub: userWithRole.id,
+            name: userWithRole.name,
+            email: userWithRole.email,
             role: userWithRole.role ? userWithRole.role.name : null,
-            roleId: userWithRole.role ? userWithRole.role.id : null, 
+            roleId: userWithRole.role ? userWithRole.role.id : null,
         };
 
         return {
@@ -47,8 +52,10 @@ export class AuthService {
         const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
         const newUser = this.userRepository.create({
+            name: registerDto.name,
             email: registerDto.email,
             password: hashedPassword,
+            phone: registerDto.phone,
             roleId: registerDto.roleId || 1,
         });
 

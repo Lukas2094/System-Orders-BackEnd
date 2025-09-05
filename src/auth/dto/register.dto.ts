@@ -15,4 +15,7 @@ export class RegisterDto {
 
     @IsNumber()
     roleId?: number;
+
+    @IsString()
+    phone?: string;
 }

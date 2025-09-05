@@ -9,21 +9,23 @@ import { ResetPasswordDto } from './dto/reset.password.dto';
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
-    @Post('login')
-    async login(
-        @Body() loginDto: LoginDto,
-        @Res({ passthrough: true }) res: Response 
-    ) {
-        const { access_token } = await this.authService.login(loginDto);
-        res.cookie('token', access_token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 3600 * 1000 
-        });
+@Post('login')
+async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) res: Response
+) {
+    const { email, password } = loginDto;
+    const { access_token } = await this.authService.login(email, password);
 
-        return { access_token }; 
-    }
+    res.cookie('token', access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 3600 * 1000,
+    });
+
+    return { access_token };
+}
 
     @Post('register')
     async register(@Body() registerDto: RegisterDto) {
