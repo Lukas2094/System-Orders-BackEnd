@@ -38,19 +38,17 @@ export class UsersController {
     return this.usersService.remove(+id);
   }
 
-    @Post(':id/token')
-    async refreshToken(@Param('id') id: number, @Res({ passthrough: true }) res: Response) {
-        const user = await this.usersService.findById(id);
+  @Post(':id/token')
+  async refreshToken(@Param('id') id: number, @Res({ passthrough: true }) res: Response) {
+    const { user, token } = await this.usersService.update(id, {});
 
-        const payload = {
-            sub: user.id,
-            name: user.name,
-            role: user.role.name,
-            roleId: user.role.id,
-        };
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000
+    });
 
-        const token = this.jwtService.sign(payload);
-        res.cookie('token', token, { httpOnly: true, path: '/', maxAge: 24 * 60 * 60 * 1000 });
-        return { token };
-    }
+    return { success: true, user, token };
+  }
 }
