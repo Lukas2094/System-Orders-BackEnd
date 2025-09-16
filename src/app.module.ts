@@ -11,6 +11,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { SubcategoriesModule } from './subcategories/subcategories.module';
 import { RolesModule } from './roles/roles.module';
 import { MenuModule } from './menu/menu.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { MenuModule } from './menu/menu.module';
     WhatsappModule,
     CategoriesModule,
     SubcategoriesModule,
+    PaymentModule,
     RolesModule,
     MenuModule
   ],
