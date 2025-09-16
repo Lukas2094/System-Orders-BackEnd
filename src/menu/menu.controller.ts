@@ -1,39 +1,73 @@
-// menu.controller.ts
-import { Controller, Get, Post, Body, Param, Delete, Put } from "@nestjs/common";
+import { Controller, Get, Post, Body, Param, Delete, Put, HttpException, HttpStatus } from "@nestjs/common";
 import { MenuService } from "./menu.service";
 import { CreateMenuDto, UpdateMenuDto } from "./dto/create-menu.dto";
+import { CreateSubmenuDto } from "src/submenu/dto/create-submenu.dto";
 
 @Controller("menus")
 export class MenuController {
     constructor(private readonly menuService: MenuService) { }
 
+    // Criar menu
     @Post()
-    create(@Body() dto: CreateMenuDto) {
+    async create(@Body() dto: CreateMenuDto) {
         return this.menuService.create(dto);
     }
 
+    // Criar submenu (rota separada para evitar conflito)
+    @Post("submenu")
+    async createSubmenu(@Body() dto: CreateSubmenuDto) {
+        return this.menuService.createSubmenu(dto);
+    }
+
+    // Buscar todos os menus
     @Get()
-    findAll() {
+    async findAll() {
         return this.menuService.findAll();
     }
 
+    // Buscar menu por ID
     @Get(":id")
-    findOne(@Param("id") id: string) {
+    async findOne(@Param("id") id: string) {
         return this.menuService.findOne(+id);
     }
 
+    // Buscar submenus por menu
+    @Get(":menuId/submenus")
+    async findSubmenus(@Param("menuId") menuId: string) {
+        return this.menuService.findByMenu(+menuId);
+    }
+
+    // Atualizar menu
     @Put(":id")
-    update(@Param("id") id: string, @Body() dto: UpdateMenuDto) {
+    async update(@Param("id") id: string, @Body() dto: UpdateMenuDto) {
         return this.menuService.update(+id, dto);
     }
 
+    // Deletar menu
     @Delete(":id")
-    remove(@Param("id") id: string) {
+    async remove(@Param("id") id: string) {
         return this.menuService.remove(+id);
     }
 
-    @Get("/role/:roleId")
-    findByRole(@Param("roleId") roleId: string) {
-        return this.menuService.findByRole(+roleId);
+    // Buscar menus (e submenus) por role
+    @Get("role/:roleId")
+    async findByRole(@Param("roleId") roleId: string) {
+        try {
+            const menus = await this.menuService.findByRole(+roleId);
+
+            return {
+                success: true,
+                data: menus,
+                count: menus.length,
+                message: menus.length > 0
+                    ? `Menus encontrados para a role ${roleId}`
+                    : `Nenhum menu encontrado para a role ${roleId}`
+            };
+        } catch (error) {
+            throw new HttpException({
+                success: false,
+                message: error.message
+            }, HttpStatus.NOT_FOUND);
+        }
     }
 }

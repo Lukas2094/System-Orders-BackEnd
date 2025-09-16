@@ -1,6 +1,7 @@
 // menu.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany } from "typeorm";
 import { Role } from "src/roles/roles.entity";
+import { Submenu } from "src/submenu/submenu.entity";
 
 @Entity("menus")
 export class Menu {
@@ -15,6 +16,9 @@ export class Menu {
 
     @Column()
     icon: string;
+
+    @OneToMany(() => Submenu, (submenu) => submenu.menu)
+    submenus: Submenu[];
 
     @ManyToMany(() => Role, role => role.menus)
     @JoinTable({

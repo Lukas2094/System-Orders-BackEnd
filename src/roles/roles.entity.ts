@@ -3,6 +3,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToMany } from 'typeorm';
 import { User } from '../users/users.entity';
 import { Menu } from 'src/menu/menu.entity';
+import { Submenu } from 'src/submenu/submenu.entity';
 
 @Entity('roles')
 export class Role {
@@ -23,4 +24,7 @@ export class Role {
 
     @ManyToMany(() => Menu, menu => menu.roles)
     menus: Menu[];
+
+    @ManyToMany(() => Submenu, submenu => submenu.roles)
+    submenus: Submenu[];
 }

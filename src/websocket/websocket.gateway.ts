@@ -68,12 +68,27 @@ export class WebsocketGateway
     }
 
     emitMenuUpdated(menu: any) {
-        console.log('✏️ Menu atualizado:', menu);
+        // console.log('✏️ Menu atualizado:', menu);
         this.server.emit('menuUpdated', menu);
     }
 
     emitMenuDeleted(menuId: number) {
         console.log('🗑️ Menu deletado:', menuId);
         this.server.emit('menuDeleted', menuId);
+    }
+
+    emitSubmenuCreated(submenu) {
+        console.log('🆕 Submenu criado:', submenu);
+        this.server.emit('submenuCreated', submenu);
+    }
+
+    emitSubmenuDeleted(id) {
+        console.log('🗑️ Submenu deletado:', id);
+        this.server.emit('submenuDeleted', id);
+    }
+
+    emitSubmenuUpdated(submenu) {
+        console.log('✏️ Submenu atualizado:', submenu);
+        this.server.emit('submenuUpdated', submenu);
     }
 }
