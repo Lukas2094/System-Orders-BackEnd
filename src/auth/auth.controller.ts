@@ -19,8 +19,8 @@ async login(
 
     res.cookie('token', access_token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: true,
+        sameSite: 'none',
         maxAge: 3600 * 1000,
     });
 
@@ -45,8 +45,8 @@ async login(
         // Remove o cookie
         res.clearCookie('token', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
         });
 
         return res.status(200).json({ message: 'Logout realizado com sucesso' });
