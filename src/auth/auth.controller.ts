@@ -21,6 +21,7 @@ async login(
         httpOnly: true,
         secure: true,
         sameSite: 'none',
+        path: '/',  
         maxAge: 3600 * 1000,
     });
 
