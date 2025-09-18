@@ -5,15 +5,8 @@ import { ConfigService } from '@nestjs/config';
 import { WhatsAppMessage } from './entities/message.entity';
 import { OrdersService } from '../orders/orders.service';
 import { CreateOrderDto } from '../orders/dto/create-order.dto';
-
-// Simulação de cliente WhatsApp (substitua pela biblioteca real que você usar)
-interface WhatsAppClient {
-    sendMessage: (to: string, message: string) => Promise<any>;
-    sendImage: (to: string, imagePath: string, caption: string) => Promise<any>;
-    onMessage: (callback: (message: any) => void) => void;
-    initialize: () => Promise<void>;
-    destroy: () => Promise<void>;
-}
+import * as qrcode from 'qrcode-terminal';
+import { Client, LocalAuth, MessageMedia } from 'whatsapp-web.js';
 
 interface OrderItem {
     productId: number;
@@ -25,13 +18,13 @@ interface OrderItem {
 @Injectable()
 export class WhatsappService implements OnModuleInit, OnModuleDestroy {
     private isConnected = false;
-    private client: WhatsAppClient;
+    private client: Client;
 
     constructor(
         @InjectRepository(WhatsAppMessage)
         private messageRepository: Repository<WhatsAppMessage>,
         private configService: ConfigService,
-        @Inject(forwardRef(() => OrdersService)) // Use forwardRef na injeção
+        @Inject(forwardRef(() => OrdersService))
         private ordersService: OrdersService,
     ) { }
 
@@ -41,71 +34,83 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
 
     async onModuleDestroy() {
         if (this.client) {
+            console.log('🔄 Destruindo cliente WhatsApp...');
             await this.client.destroy();
+            this.isConnected = false;
         }
     }
 
     private async initializeWhatsApp(): Promise<void> {
         try {
-            console.log('🔄 Inicializando WhatsApp...');
+            console.log('🔄 Inicializando WhatsApp Real...');
 
-            // Aqui você inicializaria o cliente WhatsApp real
-            // Exemplo com whatsapp-web.js:
-            /*
-            const { Client, LocalAuth } = require('whatsapp-web.js');
-            const qrcode = require('qrcode-terminal');
-            
             this.client = new Client({
-              authStrategy: new LocalAuth({
-                clientId: "whatsapp-bot"
-              }),
-              puppeteer: {
-                headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox']
-              }
+                authStrategy: new LocalAuth({
+                    clientId: this.configService.get('WHATSAPP_CLIENT_ID') || 'whatsapp-bot'
+                }),
+                puppeteer: {
+                    headless: true,
+                    args: [
+                        '--no-sandbox',
+                        '--disable-setuid-sandbox',
+                        '--disable-dev-shm-usage',
+                        '--disable-accelerated-2d-canvas',
+                        '--no-first-run',
+                        '--no-zygote',
+                        '--single-process',
+                        '--disable-gpu'
+                    ]
+                }
             });
-      
-            this.client.on('qr', (qr) => {
-              console.log('📲 Escaneie o QR Code abaixo:');
-              qrcode.generate(qr, { small: true });
-            });
-      
-            this.client.on('ready', () => {
-              console.log('✅ WhatsApp conectado!');
-              this.isConnected = true;
-            });
-      
-            this.client.on('message', async (message) => {
-              await this.handleIncomingMessage(message);
-            });
-      
-            await this.client.initialize();
-            */
 
-            // Simulação para desenvolvimento
-            this.isConnected = true;
-            console.log('✅ WhatsApp simulado conectado!');
+            // Gerar QR Code
+            this.client.on('qr', (qr: string) => {
+                console.log('📲 Escaneie o QR Code abaixo com seu WhatsApp:');
+                qrcode.generate(qr, { small: true });
+                console.log('\n💡 Dica: Abra o WhatsApp > Menu > Linked Devices > Link a Device');
+            });
+
+            // Quando estiver pronto
+            this.client.on('ready', () => {
+                console.log('✅ WhatsApp conectado com sucesso!');
+                this.isConnected = true;
+            });
+
+            // Quando receber mensagens (usando a sintaxe correta)
+            this.client.on('message', async (message: any) => {
+                await this.handleIncomingMessage(message);
+            });
+
+            // Quando desconectar
+            this.client.on('disconnected', (reason: string) => {
+                console.log('❌ WhatsApp desconectado:', reason);
+                this.isConnected = false;
+                setTimeout(() => this.initializeWhatsApp(), 5000);
+            });
+
+            // Inicializar cliente
+            await this.client.initialize();
 
         } catch (error) {
             console.error('❌ Erro ao inicializar WhatsApp:', error);
+            setTimeout(() => this.initializeWhatsApp(), 10000);
         }
     }
 
     async sendMessage(phoneNumber: string, message: string): Promise<any> {
-        if (!this.isConnected) {
+        if (!this.isConnected || !this.client) {
             throw new Error('WhatsApp não está conectado');
         }
 
         const formattedNumber = this.formatPhoneNumber(phoneNumber);
 
         try {
-            // Simulação de envio (substitua pela implementação real)
-            console.log(`📤 Enviando mensagem para ${formattedNumber}: ${message}`);
+            console.log(`📤 Enviando mensagem real para ${formattedNumber}`);
 
-            // Implementação real seria:
-            // const result = await this.client.sendMessage(formattedNumber, message);
+            // Enviar mensagem real - método correto do Client
+            const result = await this.client.sendMessage(formattedNumber, message);
 
-            const messageId = `wa-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            const messageId = result.id._serialized;
 
             // Salvar no histórico
             const whatsappMessage = this.messageRepository.create({
@@ -123,9 +128,8 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
             return { success: true, messageId };
 
         } catch (error) {
-            console.error('❌ Erro ao enviar mensagem:', error);
+            console.error('❌ Erro ao enviar mensagem real:', error);
 
-            // Salvar erro no histórico
             const whatsappMessage = this.messageRepository.create({
                 messageId: `error-${Date.now()}`,
                 from: 'system',
@@ -138,27 +142,29 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
             });
 
             await this.messageRepository.save(whatsappMessage);
-
             throw error;
         }
     }
 
     async sendImage(phoneNumber: string, imageBuffer: Buffer, filename: string): Promise<any> {
-        if (!this.isConnected) {
+        if (!this.isConnected || !this.client) {
             throw new Error('WhatsApp não está conectado');
         }
 
         const formattedNumber = this.formatPhoneNumber(phoneNumber);
 
         try {
-            // Simulação de envio de imagem (substitua pela implementação real)
-            console.log(`📤 Enviando imagem para ${formattedNumber}: ${filename}`);
+            console.log(`📤 Enviando imagem real para ${formattedNumber}`);
 
-            // Implementação real seria:
-            // const media = new MessageMedia('image/png', imageBuffer.toString('base64'));
-            // const result = await this.client.sendMessage(formattedNumber, media, { caption: 'QR Code para pagamento' });
+            // Criar media a partir do buffer - método correto
+            const media = new MessageMedia('image/png', imageBuffer.toString('base64'), filename);
 
-            const messageId = `wa-img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            // Enviar imagem real - método correto
+            const result = await this.client.sendMessage(formattedNumber, media, {
+                caption: 'QR Code para pagamento PIX'
+            });
+
+            const messageId = result.id._serialized;
 
             // Salvar no histórico
             const whatsappMessage = this.messageRepository.create({
@@ -177,22 +183,7 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
             return { success: true, messageId };
 
         } catch (error) {
-            console.error('❌ Erro ao enviar imagem:', error);
-
-            // Salvar erro no histórico
-            const whatsappMessage = this.messageRepository.create({
-                messageId: `error-img-${Date.now()}`,
-                from: 'system',
-                to: formattedNumber,
-                body: `Imagem: ${filename}`,
-                direction: 'sent',
-                type: 'image',
-                status: 'error',
-                metadata: { error: error.message, filename }
-            });
-
-            await this.messageRepository.save(whatsappMessage);
-
+            console.error('❌ Erro ao enviar imagem real:', error);
             throw error;
         }
     }
@@ -202,7 +193,13 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
             const from = message.from;
             const body = message.body.toLowerCase().trim();
 
-            console.log(`📩 Mensagem recebida de ${from}: ${body}`);
+            console.log(`📩 Mensagem real recebida de ${from}: ${body}`);
+
+            // ⚠️ IGNORAR mensagens do sistema e grupos
+            if (this.isSystemMessage(from) || this.isGroupMessage(from)) {
+                console.log(`⚙️ Ignorando mensagem do sistema: ${from}`);
+                return;
+            }
 
             // Salvar mensagem recebida
             const whatsappMessage = this.messageRepository.create({
@@ -221,23 +218,32 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
             if (body.includes('pedido') || body.includes('comprar') || body.includes('quero')) {
                 await this.processOrderRequest(from, message.body, message.id._serialized);
             }
-
-            // Processar outros comandos
             else if (body.includes('status') || body.includes('onde está')) {
                 await this.handleStatusRequest(from, body);
             }
-
             else if (body.includes('ajuda') || body === 'menu') {
                 await this.sendHelpMessage(from);
             }
-
             else {
                 await this.sendDefaultResponse(from);
             }
 
         } catch (error) {
-            console.error('❌ Erro ao processar mensagem:', error);
+            console.error('❌ Erro ao processar mensagem real:', error);
         }
+    }
+
+    private isSystemMessage(from: string): boolean {
+        // Mensagens do sistema geralmente têm números muito longos ou específicos
+        return from.includes('@g.us') ||
+            from.includes('status@broadcast') ||
+            from.length > 20 ||
+            from.includes('1203634'); // Número que apareceu
+    }
+
+    private isGroupMessage(from: string): boolean {
+        // Mensagens de grupos terminam com @g.us
+        return from.endsWith('@g.us');
     }
 
     private async processOrderRequest(from: string, message: string, messageId: string): Promise<void> {
@@ -426,9 +432,22 @@ Ou descreva o que você precisa!`;
     }
 
     private formatPhoneNumber(phone: string): string {
-        // Remove caracteres não numéricos e adiciona código do país
         const cleaned = phone.replace(/\D/g, '');
-        return `55${cleaned}@c.us`;
+
+        if (cleaned.startsWith('55')) {
+            return `${cleaned}@c.us`;
+        }
+
+        if (cleaned.length === 11) {
+            return `55${cleaned}@c.us`;
+        }
+
+        if (cleaned.length === 10) {
+            return `55${cleaned}@c.us`;
+        }
+
+        // Para outros formatos, assume que já está correto
+        return `${cleaned}@c.us`;
     }
 
     private cleanPhoneNumber(phone: string): string {
@@ -437,21 +456,20 @@ Ou descreva o que você precisa!`;
     }
 
     async sendImageUrl(phoneNumber: string, imageUrl: string, caption: string): Promise<any> {
-        if (!this.isConnected) {
+        if (!this.isConnected || !this.client) {
             throw new Error('WhatsApp não está conectado');
         }
 
         const formattedNumber = this.formatPhoneNumber(phoneNumber);
 
         try {
-            // Simulação de envio de imagem por URL
-            console.log(`📤 Enviando imagem URL para ${formattedNumber}: ${imageUrl}`);
+            console.log(`📤 Enviando imagem por URL para ${formattedNumber}`);
 
-            // Implementação real seria:
-            // const media = await MessageMedia.fromUrl(imageUrl);
-            // const result = await this.client.sendMessage(formattedNumber, media, { caption });
+            // Baixar imagem da URL e criar media
+            const media = await MessageMedia.fromUrl(imageUrl);
+            const result = await this.client.sendMessage(formattedNumber, media, { caption });
 
-            const messageId = `wa-img-url-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            const messageId = result.id._serialized;
 
             // Salvar no histórico
             const whatsappMessage = this.messageRepository.create({
@@ -471,21 +489,6 @@ Ou descreva o que você precisa!`;
 
         } catch (error) {
             console.error('❌ Erro ao enviar imagem por URL:', error);
-
-            // Salvar erro no histórico
-            const whatsappMessage = this.messageRepository.create({
-                messageId: `error-img-url-${Date.now()}`,
-                from: 'system',
-                to: formattedNumber,
-                body: `Imagem URL: ${caption}`,
-                direction: 'sent',
-                type: 'image',
-                status: 'error',
-                metadata: { error: error.message, imageUrl, caption }
-            });
-
-            await this.messageRepository.save(whatsappMessage);
-
             throw error;
         }
     }

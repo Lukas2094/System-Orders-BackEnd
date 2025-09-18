@@ -25,18 +25,16 @@ export class PagbankService {
     private readonly apiKey: string;
 
     constructor(private configService: ConfigService) {
-        // Forneça valores padrão para evitar undefined
         this.apiUrl = this.configService.get('PAGBANK_API_URL') || 'https://api.pagbank.com.br';
         this.apiKey = this.configService.get('PAGBANK_API_KEY') || '';
     }
 
     async createPayment(paymentRequest: PagbankPaymentRequest): Promise<PagbankPaymentResponse> {
         try {
-            // Implementação da integração com PagBank
-            // Esta é uma implementação genérica - adapte para a API real do PagBank
+       
 
             const response = await axios.post(`${this.apiUrl}/payments`, {
-                amount: paymentRequest.amount * 100, // Converter para centavos
+                amount: paymentRequest.amount * 100,
                 currency: 'BRL',
                 reference_id: paymentRequest.orderId,
                 customer: {
