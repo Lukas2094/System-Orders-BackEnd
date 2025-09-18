@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: nestjs-backend
+    env: node
+    plan: free
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm run start:prod"
+    autoDeploy: true
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: https://meu-front.onrender.com
