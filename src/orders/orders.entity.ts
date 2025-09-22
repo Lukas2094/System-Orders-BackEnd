@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Appointment } from 'src/appointments/appointment.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
 
 @Entity('orders')
 export class Order {
@@ -19,4 +20,7 @@ export class Order {
 
     @CreateDateColumn()
     createdAt: Date;
+
+    @OneToMany(() => Appointment, (appointment) => appointment.order)
+    appointments: Appointment[];
 }

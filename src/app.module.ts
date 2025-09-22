@@ -11,6 +11,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { SubcategoriesModule } from './subcategories/subcategories.module';
 import { RolesModule } from './roles/roles.module';
 import { MenuModule } from './menu/menu.module';
+import { AppointmentsModule } from './appointments/appointments.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { MenuModule } from './menu/menu.module';
     CategoriesModule,
     SubcategoriesModule,
     RolesModule,
+    AppointmentsModule,
     MenuModule
   ],
 })

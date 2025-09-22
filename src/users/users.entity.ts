@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Role } from 'src/roles/roles.entity';
 import * as bcrypt from 'bcrypt';
+import { Appointment } from 'src/appointments/appointment.entity';
 
 @Entity('users')
 export class User {
@@ -31,6 +32,9 @@ export class User {
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
     updatedAt: Date;
+
+    @OneToMany(() => Appointment, (appointment) => appointment.user)
+    appointments: Appointment[];
 
     async comparePassword(password: string): Promise<boolean> {
         return bcrypt.compare(password, this.password);
