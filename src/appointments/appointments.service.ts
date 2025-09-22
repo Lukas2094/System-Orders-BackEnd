@@ -13,7 +13,7 @@ export class AppointmentsService {
     constructor(
         @InjectRepository(Appointment)
         private repo: Repository<Appointment>,
-        private readonly wsGateway: WebsocketGateway, // 👈 injeta o gateway
+        private readonly wsGateway: WebsocketGateway,
     ) { }
 
     async create(dto: CreateAppointmentDto, user?: User) {
@@ -74,8 +74,7 @@ export class AppointmentsService {
         const appointment = await this.findOne(id);
         await this.repo.remove(appointment);
 
-        // 🔥 Emite evento no WebSocket
-        this.wsGateway.emitAppointmentDeleted(id);
+        this.wsGateway.emitAppointmentDeleted(appointment.id);
 
         return { deleted: true };
     }
