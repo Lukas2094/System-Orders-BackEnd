@@ -34,14 +34,14 @@ export class WebsocketGateway
     // ---- Eventos de pedidos ----
     @SubscribeMessage('updateOrders')
     handleUpdateOrders(@MessageBody() data: any) {
-        console.log('📦 Update Orders:', data);
+        // console.log('📦 Update Orders:', data);
         this.server.emit('ordersUpdated', data);
     }
 
     // ---- Eventos de estoque ----
     @SubscribeMessage('updateStock')
     handleUpdateStock(@MessageBody() data: any) {
-        console.log('📦 Update Stock:', data);
+        // console.log('📦 Update Stock:', data);
         this.server.emit('stockUpdated', data);
     }
 
@@ -57,13 +57,13 @@ export class WebsocketGateway
     }
 
     emitUserDeleted(userId: number) {
-        console.log('🗑️ User deleted:', userId);
+        // console.log('🗑️ User deleted:', userId);
         this.server.emit('userDeleted', userId);
     }
 
     // ---- Eventos de menus ----
     emitMenuCreated(menu: any) {
-        console.log('🆕 Menu criado:', menu);
+        // console.log('🆕 Menu criado:', menu);
         this.server.emit('menuCreated', menu);
     }
 
@@ -73,22 +73,38 @@ export class WebsocketGateway
     }
 
     emitMenuDeleted(menuId: number) {
-        console.log('🗑️ Menu deletado:', menuId);
+        // console.log('🗑️ Menu deletado:', menuId);
         this.server.emit('menuDeleted', menuId);
     }
 
     emitSubmenuCreated(submenu) {
-        console.log('🆕 Submenu criado:', submenu);
+        // console.log('🆕 Submenu criado:', submenu);
         this.server.emit('submenuCreated', submenu);
     }
 
     emitSubmenuDeleted(id) {
-        console.log('🗑️ Submenu deletado:', id);
+        // console.log('🗑️ Submenu deletado:', id);
         this.server.emit('submenuDeleted', id);
     }
 
     emitSubmenuUpdated(submenu) {
-        console.log('✏️ Submenu atualizado:', submenu);
+        // console.log('✏️ Submenu atualizado:', submenu);
         this.server.emit('submenuUpdated', submenu);
+    }
+
+    // ---- Eventos de agendamentos ----
+    emitAppointmentCreated(appointment: any) {
+        // console.log('🆕 Agendamento criado:', appointment);
+        this.server.emit('appointmentCreated', appointment);
+    }
+
+    emitAppointmentUpdated(appointment: any) {
+        // console.log('✏️ Agendamento atualizado:', appointment);
+        this.server.emit('appointmentUpdated', appointment);
+    }
+
+    emitAppointmentDeleted(id: number) {
+        // console.log('🗑️ Agendamento deletado:', id);
+        this.server.emit('appointmentDeleted', id);
     }
 }

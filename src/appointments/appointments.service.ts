@@ -1,3 +1,4 @@
+// appointments.service.ts
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -5,12 +6,14 @@ import { Appointment } from './appointment.entity';
 import { User } from '../users/users.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { WebsocketGateway } from 'src/websocket/websocket.gateway';
 
 @Injectable()
 export class AppointmentsService {
     constructor(
         @InjectRepository(Appointment)
         private repo: Repository<Appointment>,
+        private readonly wsGateway: WebsocketGateway, // 👈 injeta o gateway
     ) { }
 
     async create(dto: CreateAppointmentDto, user?: User) {
@@ -24,25 +27,32 @@ export class AppointmentsService {
             order: dto.order_id ? { id: dto.order_id } : undefined,
         });
 
-        return this.repo.save(appointment);
+        const saved = await this.repo.save(appointment);
+
+        // 🔥 Emite evento no WebSocket
+        this.wsGateway.emitAppointmentCreated(saved);
+
+        return saved;
     }
 
     async findAll() {
-        return this.repo.find();
+        return this.repo.find({ relations: ['user', 'order'] });
     }
 
     async findOne(id: number, user?: User) {
-        const appointment = await this.repo.findOne({ where: { id } });
+        const appointment = await this.repo.findOne({
+            where: { id },
+            relations: ['user', 'order'],
+        });
+
         if (!appointment) throw new NotFoundException('Agendamento não encontrado');
 
-        // Só verifica role se user existir
         if (user?.role?.name === 'user' && appointment.user.id !== user.id) {
             throw new ForbiddenException('Você não tem acesso a este agendamento');
         }
 
         return appointment;
     }
-
 
     async update(id: number, dto: UpdateAppointmentDto, user?: User) {
         const appointment = await this.findOne(id, user);
@@ -52,11 +62,21 @@ export class AppointmentsService {
         }
 
         Object.assign(appointment, dto);
-        return this.repo.save(appointment);
+        const updated = await this.repo.save(appointment);
+
+        // 🔥 Emite evento no WebSocket
+        this.wsGateway.emitAppointmentUpdated(updated);
+
+        return updated;
     }
 
     async remove(id: number) {
         const appointment = await this.findOne(id);
-        return this.repo.remove(appointment);
+        await this.repo.remove(appointment);
+
+        // 🔥 Emite evento no WebSocket
+        this.wsGateway.emitAppointmentDeleted(id);
+
+        return { deleted: true };
     }
 }
