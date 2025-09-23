@@ -3,5 +3,6 @@
     "editor.defaultFormatter": "vscode.json-language-features",
     "editor.formatOnSave": true,
     "editor.tabSize": 2
-  }
+  },
+  "postman.settings.dotenv-detection-notification-visibility": false
 }

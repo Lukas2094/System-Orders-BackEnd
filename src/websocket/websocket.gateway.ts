@@ -104,7 +104,7 @@ export class WebsocketGateway
     }
 
     emitAppointmentDeleted(id: number) {
-        // console.log('🗑️ Agendamento deletado:', id);
-        this.server.emit('appointmentDeleted', id);
+    if (!id) return;
+    this.server.emit("appointmentDeleted", id);
     }
 }

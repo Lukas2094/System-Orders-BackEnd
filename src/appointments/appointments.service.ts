@@ -29,10 +29,14 @@ export class AppointmentsService {
 
         const saved = await this.repo.save(appointment);
 
-        // 🔥 Emite evento no WebSocket
-        this.wsGateway.emitAppointmentCreated(saved);
+        // 🔥 Recarrega com relations
+        const fullAppointment = await this.repo.findOne({
+            where: { id: saved.id },
+            relations: ['user', 'order'],
+        });
 
-        return saved;
+        this.wsGateway.emitAppointmentCreated(fullAppointment);
+        return fullAppointment;
     }
 
     async findAll() {
@@ -64,18 +68,22 @@ export class AppointmentsService {
         Object.assign(appointment, dto);
         const updated = await this.repo.save(appointment);
 
-        // 🔥 Emite evento no WebSocket
-        this.wsGateway.emitAppointmentUpdated(updated);
+        // 🔥 Recarrega com relations
+        const fullAppointment = await this.repo.findOne({
+            where: { id: updated.id },
+            relations: ['user', 'order'],
+        });
 
-        return updated;
+        this.wsGateway.emitAppointmentUpdated(fullAppointment);
+        return fullAppointment;
     }
 
     async remove(id: number) {
-        const appointment = await this.findOne(id);
-        await this.repo.remove(appointment);
+    const appointment = await this.findOne(id);
+    await this.repo.remove(appointment);
 
-        this.wsGateway.emitAppointmentDeleted(appointment.id);
+    this.wsGateway.emitAppointmentDeleted(appointment.id);
 
-        return { deleted: true };
+    return { deleted: true };
     }
 }
