@@ -12,8 +12,10 @@ import { SubcategoriesModule } from './subcategories/subcategories.module';
 import { RolesModule } from './roles/roles.module';
 import { MenuModule } from './menu/menu.module';
 import { AppointmentsModule } from './appointments/appointments.module';
+import { AppController } from './app.controller';
 
 @Module({
+  controllers: [AppController],
   imports: [
     ConfigModule.forRoot({
       isGlobal: true, 
