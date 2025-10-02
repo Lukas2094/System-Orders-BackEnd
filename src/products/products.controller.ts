@@ -1,12 +1,14 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, Query, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Query, Put, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('products')
 export class ProductsController {
     constructor(private productsService: ProductsService) { }
 
+    @UseGuards(JwtAuthGuard)
     @Get()
     findAll(@Query('category') categoryId?: number, @Query('subcategory') subcategoryId?: number) {
         if (categoryId) {
