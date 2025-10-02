@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsPositive, IsOptional, IsInt } from 'class-validator';
+import { IsString, IsNumber, IsPositive, IsOptional, IsInt, isString } from 'class-validator';
 
 export class CreateProductDto {
     @IsString()
@@ -19,4 +19,8 @@ export class CreateProductDto {
     @IsInt()
     @IsPositive()
     subcategoryId?: number | null;
+
+    @IsOptional()
+    @IsString()
+    isbn?: string | null;
 }

@@ -96,6 +96,10 @@ export class ProductsService {
             }
         }
 
+        if (updateData.isbn !== undefined) {
+            product.isbn = updateData.isbn;
+        }
+
         if (updateData.name) product.name = updateData.name;
         if (updateData.price) product.price = updateData.price;
         if (updateData.stock !== undefined) product.stock = updateData.stock;
