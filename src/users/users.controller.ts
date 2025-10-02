@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, Res, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -12,11 +13,13 @@ export class UsersController {
     private jwtService: JwtService,
   ) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   async findAll() {
     return this.usersService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findOne(@Param('id') id: number) {
     return this.usersService.findById(+id);
