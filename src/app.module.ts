@@ -13,6 +13,7 @@ import { RolesModule } from './roles/roles.module';
 import { MenuModule } from './menu/menu.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { AppController } from './app.controller';
+import { RelatoriosModule } from './reports/reports.module';
 
 @Module({
   controllers: [AppController],
@@ -41,6 +42,7 @@ import { AppController } from './app.controller';
     SubcategoriesModule,
     RolesModule,
     AppointmentsModule,
+    RelatoriosModule,
     MenuModule
   ],
 })
